@@ -99,7 +99,7 @@ gem_group :test do
   # Fuubar is an instafailing RSpec formatter that uses a progress bar instead of a string of letters and dots as feedback.
   gem 'fuubar'
   # test matchers
-  gem 'shoulda-matchers'
+  gem 'shoulda-matchers', require: false
   gem 'capybara'
   gem 'database_cleaner'
   gem 'launchy'
@@ -112,6 +112,7 @@ end
 remove_file ".gitignore"
 copy_file ".gitignore"
 
+# settingslogic
 create_file "config/application.yml" do <<-EOF
 # config/application.yml
 defaults: &defaults
@@ -130,12 +131,55 @@ production:
 EOF
 end
 
+create_file "app/model/settings.rb" do <<-'EOF'
+class Settings < Settingslogic
+  source "#{Rails.root}/config/application.yml"
+  namespace Rails.env
+end
+EOF
+end
+
+
+
+
 after_bundle do
   run "spring stop"
+
   generate "rspec:install"
+  # rspec settings 
+  run "mkdir spec/factories spec/features spec/support"
+  create_file "spec/support/factory_girl.rb" do <<-EOF
+RSpec.configure do |config|
+  config.include FactoryGirl::Syntax::Methods
+end
+  EOF
+  end
+
+  create_file "spec/support/url_helpers.rb" do <<-EOF
+RSpec.configure do |config|
+  config.include Rails.application.routes.url_helpers
+end
+  EOF
+  end
+
+  insert_into_file 'spec/rails_helper.rb', after: "require 'rspec/rails'\n" do <<-EOF
+require "capybara/rails"
+require "shoulda/matchers"
+  EOF
+  end
+
+  append_to_file '.rspec' do <<-EOF
+--format Fuubar
+--color
+  EOF
+  end
+
   run "guard init"
+  generate "forgery"
+  run "cap install"
 
   git :init
   git add: "."
   git commit: "-a -m 'Initial commit'"
 end
+
