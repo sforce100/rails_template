@@ -131,7 +131,7 @@ production:
 EOF
 end
 
-create_file "app/model/settings.rb" do <<-'EOF'
+create_file "app/models/settings.rb" do <<-'EOF'
 class Settings < Settingslogic
   source "#{Rails.root}/config/application.yml"
   namespace Rails.env
