@@ -109,8 +109,8 @@ gem_group :test do
   gem 'forgery'
 end
 
-remove_file ".gitignore"
-copy_file ".gitignore"
+# remove_file ".gitignore"
+# copy_file ".gitignore"
 
 # settingslogic
 create_file "config/application.yml" do <<-EOF
